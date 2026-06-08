@@ -111,50 +111,6 @@ export default function SearchPage() {
 
       </div>
 
-      <div className="mt-3 flex flex-wrap gap-2">
-
-        <FilterChip
-          variant="white"
-          active={progressFilter === ""}
-          onClick={() => setProgressFilter("")}
-        >
-          全進捗
-        </FilterChip>
-
-        <FilterChip
-          variant="purple"
-          active={progressFilter === "登録完了"}
-          onClick={() => setProgressFilter("登録完了")}
-        >
-          登録完了
-        </FilterChip>
-
-        <FilterChip
-          variant="purple"
-          active={progressFilter === "説明会"}
-          onClick={() => setProgressFilter("説明会")}
-        >
-          説明会
-        </FilterChip>
-
-        <FilterChip
-          variant="purple"
-          active={progressFilter === "面接"}
-          onClick={() => setProgressFilter("面接")}
-        >
-          面接
-        </FilterChip>
-
-        <FilterChip
-          variant="purple"
-          active={progressFilter === "内定"}
-          onClick={() => setProgressFilter("内定")}
-        >
-          内定
-        </FilterChip>
-
-      </div>
-
       {/* 結果 */}
       <div className="mt-6 space-y-4">
 

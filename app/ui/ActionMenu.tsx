@@ -19,7 +19,7 @@ export const ActionMenu = ({ onSortChange, onAddNew }: ActionMenuProps) => {
   };
 
   return (
-    <div className="relative flex flex-col gap-2">
+    <div className="relative flex flex-row gap-2">
       <button
         onClick={() => setMenuOpen(!menuOpen)}
         className="h-11 w-11 rounded-2xl bg-white border border-pink-100 shadow flex items-center justify-center"

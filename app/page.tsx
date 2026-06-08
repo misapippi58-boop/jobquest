@@ -200,47 +200,51 @@ const nextSchedule =
 <main className="min-h-screen bg-pink-50 p-6 pb-32">
   <div className="max-w-7xl mx-auto">
 
-    {/* ヘッダー */}
-    <div className="mb-4">
-      {user ? (
-        <h1 className="text-xl font-black text-gray-700">
-          {user.displayName} さん
-        </h1>
-      ) : (
-        <h1
-          onClick={handleLogin}
-          className="
-          cursor-pointer 
-          text-xl 
-          font-black 
-          tracking-tight 
-          text-transparent 
-          bg-clip-text 
-          bg-gradient-to-r 
-          from-blue-500 
-          via-fuchsia-500 
-          to-pink-500"
-        >
-          JobQuest (ログイン)
-        </h1>
-      )}
-    </div>
-
-  {/* 情報カード + 操作 */}
-  <div className="flex justify-between items-start mb-6">
-
-  <DashboardStats 
-      totalCompanies={companies.length}
-      nextSchedule={nextSchedule}
-      mounted={mounted}
-    />
-
-    <ActionMenu 
-      onSortChange={setSortMode} 
-      onAddNew={openNew} 
-    />
-
+{/* ヘッダーエリアをフレックスで横並びにする */}
+<div className="flex justify-between items-center mb-6">
+  
+  {/* 左側：タイトル・ログイン */}
+  <div>
+    {user ? (
+      <h1 className="text-xl font-black text-gray-700">
+        {user.displayName} さん
+      </h1>
+    ) : (
+      <h1
+        onClick={handleLogin}
+        className="
+        cursor-pointer 
+        text-xl 
+        font-black 
+        tracking-tight 
+        text-transparent 
+        bg-clip-text 
+        bg-gradient-to-r 
+        from-blue-500 
+        via-fuchsia-500 
+        to-pink-500"
+      >
+        JobQuest (ログイン)
+      </h1>
+    )}
   </div>
+
+  {/* 右側：操作メニュー（三点とプラス） */}
+  <ActionMenu 
+    onSortChange={setSortMode} 
+    onAddNew={openNew} 
+  />
+
+</div>
+
+{/* 下の統計エリアは独立させる */}
+<div className="mb-6">
+  <DashboardStats 
+    totalCompanies={companies.length}
+    nextSchedule={nextSchedule}
+    mounted={mounted}
+  />
+</div>
 
       {/* カード一覧 */}
       <DndContext
