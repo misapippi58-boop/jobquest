@@ -237,7 +237,6 @@ const nextSchedule =
 
 </div>
 
-{/* 下の統計エリアは独立させる */}
 <div className="mb-6">
   <DashboardStats 
     totalCompanies={companies.length}
@@ -306,7 +305,7 @@ const nextSchedule =
                 fixed
                 inset-0
                 bg-black/40
-                z-50
+                z-[100]
                 overflow-y-auto
                 flex
                 justify-center

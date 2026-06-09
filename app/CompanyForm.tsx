@@ -2,8 +2,10 @@
 
 import { Input, Select, TextArea, Card, Button } from "./ui";
 import { Trash2 } from "lucide-react";
+import { INDUSTRY_DB } from "./data/industryData";
 
 // 定数
+const INDUSTRY_OPTIONS = Object.keys(INDUSTRY_DB);
 const PROGRESS_LIST = ["登録完了", "説明会", "書類選考", "一次面接", "二次面接", "最終面接", "内定", "不採用", "その他"] as const;
 const PRIORITY_LIST = ["第1志望", "第2志望", "第3志望", "第4志望", "第5志望", "未設定"] as const;
 const PREFECTURES = ["北海道", "青森県", "岩手県", "宮城県", "秋田県", "山形県", "福島県", "茨城県", "栃木県", "群馬県", "埼玉県", "千葉県", "東京都", "神奈川県", "新潟県", "富山県", "石川県", "福井県", "山梨県", "長野県", "岐阜県", "静岡県", "愛知県", "三重県", "滋賀県", "京都府", "大阪府", "兵庫県", "奈良県", "和歌山県", "鳥取県", "島根県", "岡山県", "広島県", "山口県", "徳島県", "香川県", "愛媛県", "高知県", "福岡県", "佐賀県", "長崎県", "熊本県", "大分県", "宮崎県", "鹿児島県", "沖縄県"];
@@ -42,7 +44,34 @@ export default function CompanyForm({ draft, setDraft }: Props) {
       </Field>
 
       <Field label="業界">
-        <Input placeholder="IT / メーカー / 商社 など" value={draft.industry || ""} onChange={handleChange("industry")} />
+        <Select
+          value={INDUSTRY_OPTIONS.includes(draft.industry || "") ? draft.industry : (draft.industry ? "その他" : "")}
+          onChange={(e: any) => {
+            const val = e.target.value;
+            if (val === "その他") {
+              setDraft({ ...draft, industry: " " });
+            } else if (val !== "") {
+              setDraft({ ...draft, industry: val });
+            } else {
+              setDraft({ ...draft, industry: "" });
+            }
+          }}
+        >
+          <option value="">選択してください</option>
+          {INDUSTRY_OPTIONS.map((i) => (
+            <option key={i} value={i}>{i}</option>
+          ))}
+          <option value="その他">その他</option>
+        </Select>
+
+        {(!INDUSTRY_OPTIONS.includes(draft.industry || "") && draft.industry !== "") && (
+          <Input
+            className="mt-4"
+            placeholder="業界名を入力"
+            value={draft.industry === " " ? "" : draft.industry}
+            onChange={handleChange("industry")}
+          />
+        )}
       </Field>
 
       <Field label="URL">
