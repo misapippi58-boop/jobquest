@@ -1,8 +1,10 @@
 "use client";
 
+import React from "react";
 import { Input, Select, TextArea, Card, Button } from "./ui";
 import { Trash2 } from "lucide-react";
 import { INDUSTRY_DB } from "./data/industryData";
+import { JOB_DETAILS, FLAT_JOB_LIST } from "./data/jobData";
 
 // 定数
 const INDUSTRY_OPTIONS = Object.keys(INDUSTRY_DB);
@@ -25,6 +27,8 @@ type Props = {
 };
 
 export default function CompanyForm({ draft, setDraft }: Props) {
+  const [selectedJob, setSelectedJob] = React.useState(draft.selectedJob || "");
+
   // 入力内容を更新する共通関数
   const handleChange = (field: string) => (e: any) => {
     setDraft((prev: any) => ({ ...prev, [field]: e.target.value }));
@@ -36,6 +40,8 @@ export default function CompanyForm({ draft, setDraft }: Props) {
     copy[index] = { ...copy[index], [field]: value };
     setDraft((prev: any) => ({ ...prev, schedule: copy }));
   };
+
+  const jobDetail = selectedJob ? JOB_DETAILS[selectedJob] : null;
 
   return (
     <div className="space-y-4">
@@ -76,6 +82,38 @@ export default function CompanyForm({ draft, setDraft }: Props) {
 
       <Field label="URL">
         <Input placeholder="https://xxxxxxx" value={draft.url || ""} onChange={handleChange("url")} />
+      </Field>
+
+      {/* 興味のある職種 */}
+      <Field label="興味のある職種">
+        <Select 
+          value={selectedJob} 
+          onChange={(e: any) => {
+            const val = e.target.value;
+            setSelectedJob(val);
+            setDraft((prev: any) => ({ ...prev, selectedJob: val }));
+          }}
+        >
+          <option value="">職種を選択してください</option>
+          {FLAT_JOB_LIST.map((job) => (
+            <option key={job} value={job}>{job}</option>
+          ))}
+        </Select>
+
+        {/* 職種が選ばれたら仕事内容を表示 */}
+        {selectedJob && jobDetail && (
+          <Card className="mt-2 bg-pink-50/50 border-pink-100 p-4">
+            <h4 className="font-bold text-gray-800 text-sm mb-1">💡 主な仕事内容</h4>
+            <p className="text-xs text-gray-600 leading-relaxed mb-2">
+              {jobDetail.description}
+            </p>
+            {jobDetail.future && (
+              <p className="text-xs text-gray-500">
+                <span className="font-bold">将来性: </span>{jobDetail.future}
+              </p>
+            )}
+          </Card>
+        )}
       </Field>
 
       <Field label="進捗ステータス">

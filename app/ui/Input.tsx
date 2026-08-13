@@ -1,10 +1,10 @@
 import { fieldStyle } from "./styles";
 
-export default function Input(props: any) {
+export default function Input({ className = "", ...props }: any) {
   return (
     <input
       {...props}
-      className={fieldStyle}
+      className={`${fieldStyle} font-memo ${className}`}
     />
   );
 }

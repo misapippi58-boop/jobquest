@@ -1,19 +1,27 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import Button from "../ui/Button";
-import CompanyCard from "../CompanyCard";
+import { Plus } from "lucide-react";
+import { DragEndEvent } from "@dnd-kit/core";
 import { Company } from "../types/company";
-import { INDUSTRY_DB } from "../data/industryData";
-import { Trash2 } from "lucide-react";
+import IndustryMenu from "./IndustryMenu";
+import IndustryCardList from "./IndustryCardList";
+import IndustryAddModal from "./IndustryAddModal";
+import IndustryDetailModal from "./IndustryDetailModal";
+import { moveCard, sortIndustryCards } from "./lib/sortIndustry";
+import Button from "../ui/Button";
 
 export default function IndustryPage() {
-  const [step, setStep] = useState<"large" | "small">("large");
   const [cards, setCards] = useState<Company[]>([]);
-  const [selection, setSelection] = useState({ large: "", small: "" });
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedJobForDetail, setSelectedJobForDetail] = useState<string | null>(null);
-  const [note, setNote] = useState("");
+  
+  const [sortType, setSortType] = useState<"manual" | "salary" | "created">("manual");
+  const [menuOpen, setMenuOpen] = useState(false);
+
+  // 削除モードの状態
+  const [deleteMode, setDeleteMode] = useState(false);
+  const [selectedDelete, setSelectedDelete] = useState<string[]>([]);
 
   // 初期読み込み
   useEffect(() => {
@@ -27,7 +35,32 @@ export default function IndustryPage() {
     }
   }, []);
 
-  const handleSelectComplete = (small: string) => {
+  // 安全な body ロック
+  useEffect(() => {
+    if (isModalOpen || selectedJobForDetail) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "";
+    }
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, [isModalOpen, selectedJobForDetail]);
+
+  // ドラッグ終了（任意順かつ非削除モードの時のみ有効）
+  const handleDragEnd = (event: DragEndEvent) => {
+    if (sortType !== "manual" || deleteMode) return;
+
+    const { active, over } = event;
+    if (!over || active.id === over.id) return;
+
+    const sortedCards = moveCard(cards, String(active.id), String(over.id));
+    setCards(sortedCards);
+    localStorage.setItem("my-industry-cards", JSON.stringify(sortedCards));
+  };
+
+  // 追加完了
+  const handleAddComplete = (small: string, large: string) => {
     if (cards.find((c) => c.name === small)) {
       alert("この職種は既に登録されています");
       return;
@@ -35,7 +68,7 @@ export default function IndustryPage() {
     const newCard: Company = {
       id: Date.now().toString(),
       name: small,
-      industry: selection.large,
+      industry: large,
       progress: "興味あり",
       priority: "中",
       url: "",
@@ -52,100 +85,145 @@ export default function IndustryPage() {
     setCards(updated);
     localStorage.setItem("my-industry-cards", JSON.stringify(updated));
     setIsModalOpen(false);
-    setStep("large");
-    setSelection({ large: "", small: "" });
   };
+
+  // 単一削除（詳細モーダル内から）
+  const handleDelete = (jobName: string) => {
+    const filtered = cards.filter((c) => c.name !== jobName);
+    setCards(filtered);
+    localStorage.setItem("my-industry-cards", JSON.stringify(filtered));
+    setSelectedJobForDetail(null);
+  };
+
+  // 選択切り替え（削除モード時）
+  const handleToggleSelect = (id: string) => {
+    setSelectedDelete((prev) =>
+      prev.includes(id) ? prev.filter((item) => item !== id) : [...prev, id]
+    );
+  };
+
+  // 一括削除実行
+  const handleBatchDelete = () => {
+    if (selectedDelete.length === 0) return;
+    if (!confirm(`選択した ${selectedDelete.length} 件の職種を削除しますか？`)) return;
+
+    const updated = cards.filter((c) => !selectedDelete.includes(c.id));
+    setCards(updated);
+    localStorage.setItem("my-industry-cards", JSON.stringify(updated));
+    setSelectedDelete([]);
+    setDeleteMode(false);
+  };
+
+  // メモ保存
+  const handleSaveNote = (jobName: string, note: string) => {
+    const updated = cards.map((c) => (c.name === jobName ? { ...c, memo: note } : c));
+    setCards(updated);
+    localStorage.setItem("my-industry-cards", JSON.stringify(updated));
+    alert("保存しました");
+  };
+
+  const displayCards = sortIndustryCards(cards, sortType);
+  const currentCardMemo = cards.find((c) => c.name === selectedJobForDetail)?.memo || "";
 
   return (
     <main className="min-h-screen bg-pink-50 p-6 pb-32">
       <div className="max-w-xl mx-auto">
-        <h1 className="text-2xl font-black mb-8 text-gray-800">業界研究</h1>
-        <Button onClick={() => setIsModalOpen(true)} className="w-full mb-8 font-bold" variant="pink">
-          + 興味のある業界・職種を追加
-        </Button>
+        
+        {/* ヘッダーエリア */}
+        <div className="flex items-center justify-between mb-8">
+          <div>
+            <h1 className="text-3xl font-bold text-gray-800">業界研究</h1>
+            {deleteMode && (
+              <p className="text-xs font-bold text-red-500 mt-1 animate-pulse">
+                🗑️ 削除する職種を選択してください ({selectedDelete.length}件選択中)
+              </p>
+            )}
+          </div>
 
-        {/* カード一覧 */}
-        <div className="grid gap-4">
-          {cards.map((card) => (
-            <CompanyCard
-              key={card.id}
-              company={card}
-              onOpen={() => {
-                setSelectedJobForDetail(card.name);
-                setNote(card.memo || "");
-              }}
-              onEdit={() => {}}
-              dragEnabled={false}
-              showDetails={false}
-              showEditButton={false}
+          <div className="flex items-center gap-2">
+            {!deleteMode && (
+              <button 
+                onClick={() => setIsModalOpen(true)} 
+                className="w-9 h-9 rounded-full bg-gradient-to-tr from-yellow-400 via-pink-500 to-purple-600 text-white flex items-center justify-center shadow-sm hover:opacity-90 active:scale-95 transition-all"
+                title="追加"
+              >
+                <Plus size={18} className="stroke-[3]" />
+              </button>
+            )}
+
+            <IndustryMenu 
+              menuOpen={menuOpen} 
+              setMenuOpen={setMenuOpen} 
+              sortType={sortType} 
+              setSortType={setSortType} 
+              deleteMode={deleteMode}
+              setDeleteMode={setDeleteMode}
+              setSelectedDelete={setSelectedDelete}
             />
-          ))}
+          </div>
         </div>
 
-        {/* 選択モーダル */}
-        {isModalOpen && (
-          <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4" onClick={() => setIsModalOpen(false)}>
-            <div className="bg-white w-full max-w-lg rounded-3xl p-6 max-h-[80vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
-              <h2 className="text-xl font-bold mb-6">業界・職種を選択</h2>
-              {step === "large" ? (
-                <div className="grid grid-cols-2 gap-4">
-                  {(Object.keys(INDUSTRY_DB) as Array<keyof typeof INDUSTRY_DB>).map((name) => (
-                    <button key={name} onClick={() => { setSelection({ ...selection, large: name }); setStep("small"); }} className="p-6 bg-white border border-pink-100 rounded-3xl font-bold hover:border-pink-300 text-left">
-                      {name}
-                    </button>
-                  ))}
-                </div>
-              ) : (
-                <div className="space-y-4">
-                  <button onClick={() => setStep("large")} className="text-sm text-gray-400 underline">←戻る</button>
-                  {selection.large && INDUSTRY_DB[selection.large as keyof typeof INDUSTRY_DB]?.specializedJobs ? (
-                    Object.keys(INDUSTRY_DB[selection.large as keyof typeof INDUSTRY_DB].specializedJobs).map((jobName) => (
-                      <button key={jobName} onClick={() => setSelection({ ...selection, small: jobName })} className={`w-full p-4 rounded-2xl font-bold border-2 text-left ${selection.small === jobName ? "border-pink-500 bg-pink-50 text-pink-700" : "bg-gray-50 hover:bg-gray-100"}`}>
-                        {jobName}
-                      </button>
-                    ))
-                  ) : <p>データがありません</p>}
-                  {selection.small && <Button onClick={() => handleSelectComplete(selection.small)} className="w-full" variant="pink">登録する</Button>}
-                </div>
-              )}
+        {/* カード一覧 */}
+        <IndustryCardList 
+          cards={displayCards} 
+          sortMode={sortType === "manual"} 
+          deleteMode={deleteMode}
+          selectedDelete={selectedDelete}
+          onToggleSelect={handleToggleSelect}
+          onDragEnd={handleDragEnd} 
+          onOpenDetail={(card) => setSelectedJobForDetail(card.name)} 
+        />
+
+        {/* 削除モード中の下部アクションバー */}
+        {deleteMode && (
+          <div className="fixed bottom-20 left-0 right-0 max-w-xl mx-auto px-6 z-40">
+            <div className="bg-white/95 backdrop-blur border border-red-100 shadow-xl rounded-2xl p-4 flex items-center justify-between">
+              <span className="text-sm font-bold text-gray-700">
+                {selectedDelete.length}件選択中
+              </span>
+              <div className="flex gap-2">
+                <Button
+                  onClick={() => {
+                    setDeleteMode(false);
+                    setSelectedDelete([]);
+                  }}
+                  variant="white"
+                  className="text-xs py-2 px-4"
+                >
+                  キャンセル
+                </Button>
+                <button
+                  onClick={handleBatchDelete}
+                  disabled={selectedDelete.length === 0}
+                  className={`px-4 py-2 rounded-xl text-xs font-bold text-white transition-all ${
+                    selectedDelete.length > 0 
+                      ? "bg-red-500 hover:bg-red-600 shadow-sm" 
+                      : "bg-gray-300 cursor-not-allowed"
+                  }`}
+                >
+                  一括削除する
+                </button>
+              </div>
             </div>
           </div>
         )}
 
+        {/* 追加モーダル */}
+        <IndustryAddModal 
+          isOpen={isModalOpen} 
+          onClose={() => setIsModalOpen(false)} 
+          onAddComplete={handleAddComplete} 
+        />
+
         {/* 詳細モーダル */}
-        {selectedJobForDetail && (
-          <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4" onClick={() => setSelectedJobForDetail(null)}>
-            <div className="bg-white w-full max-w-lg rounded-3xl p-8 max-h-[80vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
-              {(() => {
-                let foundJob: any = null;
-                Object.values(INDUSTRY_DB).forEach((industry: any) => {
-                  if (industry.specializedJobs && industry.specializedJobs[selectedJobForDetail]) {
-                    foundJob = industry.specializedJobs[selectedJobForDetail];
-                  }
-                });
-                if (!foundJob) return <p>データが見つかりません</p>;
-                return (
-                  <div className="space-y-4 relative">
-                    <button onClick={() => { const filtered = cards.filter((c) => c.name !== selectedJobForDetail); setCards(filtered); localStorage.setItem("my-industry-cards", JSON.stringify(filtered)); setSelectedJobForDetail(null); }} className="absolute top-0 right-0 p-2 text-gray-400 hover:text-red-500">
-                      <Trash2 size={20} />
-                    </button>
-                    <h2 className="text-2xl font-black text-pink-600 pr-8">{selectedJobForDetail}</h2>
-                    <p className="font-bold text-gray-500">仕事内容</p>
-                    <p>{foundJob.description}</p>
-                    <p className="font-bold text-gray-500">年収目安</p>
-                    <p>{foundJob.salary}</p>
-                    <p className="font-bold text-gray-500 pt-4">memo</p>
-                    <textarea value={note} onChange={(e) => setNote(e.target.value)} className="w-full p-4 rounded-2xl bg-pink-50 border-none min-h-[100px] text-sm" placeholder="メモを入力..." />
-                    <div className="flex gap-2 pt-2">
-                      <Button onClick={() => { const updated = cards.map(c => c.name === selectedJobForDetail ? {...c, memo: note} : c); setCards(updated); localStorage.setItem("my-industry-cards", JSON.stringify(updated)); alert("保存しました"); }} className="flex-1" variant="pink">保存する</Button>
-                      <Button onClick={() => setSelectedJobForDetail(null)} className="flex-1" variant="white">閉じる</Button>
-                    </div>
-                  </div>
-                );
-              })()}
-            </div>
-          </div>
-        )}
+        <IndustryDetailModal 
+          jobName={selectedJobForDetail} 
+          onClose={() => setSelectedJobForDetail(null)} 
+          onDelete={handleDelete} 
+          onSaveNote={handleSaveNote} 
+          initialNote={currentCardMemo} 
+        />
+
       </div>
     </main>
   );

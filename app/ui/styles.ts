@@ -1,4 +1,5 @@
 export const fieldStyle = `
+  font-memo
   w-full
   rounded-2xl
   border

@@ -15,13 +15,13 @@ export default function Button({
 }: Props) {
   const styles = {
     pink:
-      "px-4 py-2 font-bold shadow bg-pink-500 text-white",
+     "px-4 py-2 font-title shadow bg-pink-500 text-white",
 
     danger:
-      "px-4 py-2 font-bold shadow-none text-red-500 bg-red-50 hover:bg-red-100",
+      "px-4 py-2 font-title shadow-none text-red-500 bg-red-50 hover:bg-red-100",
 
     white:
-      "px-4 py-2 font-bold shadow bg-white text-gray-800 border border-pink-100",
+      "px-4 py-2 font-title shadow bg-white text-gray-800 border border-pink-100",
     
     icon:
       "bg-transparent shadow-none p-2 hover:bg-red-50",

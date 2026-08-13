@@ -1,30 +1,46 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
+/* ─── スクロールバー非表示 ─── */
+html, body, *, .overflow-y-auto {
+  -ms-overflow-style: none !important;
+  scrollbar-width: none !important;
+}
+html::-webkit-scrollbar, body::-webkit-scrollbar, *::-webkit-scrollbar {
+  display: none !important;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+/* ─── 背景色の固定 ─── */
+html, body, main, #__next, [data-nextjs-scroll-focus-boundary] {
+  background-color: #fdf2f8 !important;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+@font-face {
+  font-family: "SoukouMincho";
+  src: url("/SoukouMincho.ttf") format("truetype");
 }
 
+@font-face {
+  font-family: "Yosugara";
+  src: url("/yosugaraver1_2.ttf") format("truetype");
+}
+
+/* 💡 ゼンクレナイドウの定義を復活させます */
+@font-face {
+  font-family: "ZenKurenaido";
+  src: url("/ZenKurenaido-Regular.ttf") format("truetype");
+}
+
+/* 1. 見出し・タイトル系はすべて「装甲明朝」 */
+h1, h2, h3, h4, h5, h6, .font-title {
+  font-family: "SoukouMincho", serif !important;
+}
+
+/* 2. メモ欄（テキストエリア）：よすがらに無い文字は自動でゼンクレナイドウにフォールバック */
+textarea {
+  font-family: "Yosugara", "ZenKurenaido", sans-serif !important;
+}
+
+/* 3. その他全体の基本フォントは標準の読みやすいフォントにリセット */
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
-}
-
-html {
-  overflow-y: scroll;
+  font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
 }

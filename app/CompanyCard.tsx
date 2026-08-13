@@ -1,6 +1,7 @@
+import { useState, useEffect, useRef } from "react";
 import { CSS } from "@dnd-kit/utilities";
 import { useSortable } from "@dnd-kit/sortable";
-import { Pencil, GripVertical } from "lucide-react";
+import { MoreVertical, GripVertical } from "lucide-react";
 import type { Company } from "./types/company";
 
 type Props = { 
@@ -27,12 +28,31 @@ export default function CompanyCard({
   showDetails = true,
   showEditButton = true
 }: Props) {
+  const [menuOpen, setMenuOpen] = useState(false);
+  const menuRef = useRef<HTMLDivElement>(null);
+
   const { attributes, listeners, setNodeRef, transform, transition } = useSortable({
     id: company.id,
     disabled: !dragEnabled,
   });
 
   const style = { transform: CSS.Transform.toString(transform), transition };
+
+  // メニューの外側をクリックしたときに閉じる処理
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
+        setMenuOpen(false);
+      }
+    };
+
+    if (menuOpen) {
+      document.addEventListener("mousedown", handleClickOutside);
+    }
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [menuOpen]);
 
   return (
     <div ref={setNodeRef} 
@@ -55,15 +75,14 @@ export default function CompanyCard({
             {/* 名前と業界の表示部分 */}
             <div>
               <h2 className="text-2xl font-extrabold text-gray-800">{company.name}</h2>
-              {/* 業界をタグ形式で表示（業界カードでも企業カードでも表示されます） */}
-              <p className="text-sm font-medium text-gray-500 mt-1  inline-block px-2 py-0.5 rounded-lg">
+              <p className="text-sm font-medium text-gray-500 mt-1 inline-block px-2 py-0.5 rounded-lg">
                 {company.industry}
               </p>
             </div>
           </div>
 
           {/* 右側：バッジと操作ボタン */}
-          <div className="flex gap-3 shrink-0">
+          <div className="flex gap-3 items-start shrink-0">
             {showDetails && (
               <div className="flex flex-col items-end gap-2">
                 <Badge colorClass="bg-pink-500">{company.progress}</Badge>
@@ -71,17 +90,37 @@ export default function CompanyCard({
               </div>
             )}
 
-            <div className="flex flex-col items-center gap-2 text-gray-400">
+            <div className="flex items-center gap-2 text-gray-400">
               {dragEnabled && (
-                <div {...listeners} {...attributes} className="cursor-grab">
+                <div {...listeners} {...attributes} className="cursor-grab p-1" onClick={(e) => e.stopPropagation()}>
                   <GripVertical size={18} />
                 </div>
               )}
-              {/* 鉛筆マークは showEditButton が true の時だけ出る */}
+
+              {/* 3点リーダーメニュー (外側クリック対応) */}
               {showEditButton && (
-                <button onClick={(e) => { e.stopPropagation(); onEdit(); }} className="hover:text-pink-500 transition">
-                  <Pencil size={18} />
-                </button>
+                <div className="relative" ref={menuRef} onClick={(e) => e.stopPropagation()}>
+                  <button 
+                    onClick={() => setMenuOpen(!menuOpen)} 
+                    className="p-2 hover:text-pink-500 transition rounded-xl hover:bg-white/60"
+                  >
+                    <MoreVertical size={18} />
+                  </button>
+
+                  {menuOpen && (
+                    <div className="absolute right-0 mt-1 bg-white rounded-2xl shadow-xl border border-pink-100 overflow-hidden z-50 min-w-[130px] py-1">
+                      <button 
+                        className="block w-full px-4 py-2.5 text-left text-sm font-medium text-gray-700 hover:bg-pink-50 transition" 
+                        onClick={() => {
+                          setMenuOpen(false);
+                          onEdit();
+                        }}
+                      >
+                        編集する
+                      </button>
+                    </div>
+                  )}
+                </div>
               )}
             </div>
           </div>
