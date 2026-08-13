@@ -1,4 +1,4 @@
-import { initializeApp, getApps } from "firebase/app";
+import { initializeApp, getApps, getApp } from "firebase/app";
 import { getAuth } from "firebase/auth";
 import { getFirestore } from "firebase/firestore";
 
@@ -11,10 +11,10 @@ const firebaseConfig = {
   appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
 };
 
-// ここで「ブラウザ環境かどうか」をチェックして、サーバーサイドでは初期化をスキップさせる
-const app = typeof window !== "undefined" && !getApps().length 
+// ビルド時（APIキーがない状態）でもエラーで落ちないようにする安全対策
+const app = !getApps().length 
   ? initializeApp(firebaseConfig) 
-  : getApps()[0];
+  : getApp();
 
 export const auth = getAuth(app);
 export const db = getFirestore(app);
