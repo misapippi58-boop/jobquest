@@ -4,7 +4,7 @@ import React from "react";
 import { Input, Select, TextArea, Card, Button } from "./ui";
 import { Trash2 } from "lucide-react";
 import { INDUSTRY_DB } from "./data/industryData";
-import { JOB_DETAILS, JOB_LIST } from "./data/jobData";
+import { JOB_LIST } from "./data/jobData";
 
 // 定数
 const INDUSTRY_OPTIONS = Object.keys(INDUSTRY_DB);
@@ -38,8 +38,6 @@ export default function CompanyForm({ draft, setDraft }: Props) {
     copy[index] = { ...copy[index], [field]: value };
     setDraft((prev: any) => ({ ...prev, schedule: copy }));
   };
-
-  const jobDetail = draft.selectedJob ? JOB_DETAILS[draft.selectedJob] : null;
 
   // 現在選択されている業界
   const currentIndustry = draft.industry || "";
@@ -84,7 +82,7 @@ export default function CompanyForm({ draft, setDraft }: Props) {
         )}
       </Field>
 
-      {/* 業界が選択されている場合：他の項目と同じセレクトボックス形式で職種を選ぶ */}
+      {/* 業界が選択されている場合：セレクトボックス形式で職種を選ぶ */}
       {currentIndustry && (
         <Field label="興味のある職種">
           {availableJobs.length > 0 ? (
@@ -96,21 +94,6 @@ export default function CompanyForm({ draft, setDraft }: Props) {
             </Select>
           ) : (
             <p className="text-xs text-gray-400 mt-1">この業界に紐づく職種データがありません</p>
-          )}
-
-          {/* 選択された職種の仕事内容カード */}
-          {draft.selectedJob && jobDetail && (
-            <Card className="mt-3 bg-pink-50/50 border-pink-100 p-4">
-              <h4 className="font-bold text-gray-800 text-sm mb-1">💡 {draft.selectedJob} の主な仕事内容</h4>
-              <p className="text-xs text-gray-600 leading-relaxed mb-2">
-                {jobDetail.description}
-              </p>
-              {jobDetail.future && (
-                <p className="text-xs text-gray-500">
-                  <span className="font-bold">将来性: </span>{jobDetail.future}
-                </p>
-              )}
-            </Card>
           )}
         </Field>
       )}

@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import BottomNav from "./ui/BottomNav";
+import BottomNav from "./ui/BottomNav"; // 💡 インポートを戻す
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -17,6 +17,7 @@ export default function RootLayout({
       <body className="antialiased min-h-screen bg-pink-50 relative pb-24">
         {children}
 
+        {/* 💡 ログイン中なら自動で表示される BottomNav を配置 */}
         <BottomNav />
       </body>
     </html>

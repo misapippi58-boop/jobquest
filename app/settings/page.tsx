@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation"; // 💡 追加：ページ遷移用
 import { auth, db } from "../src/firebaseConfig";
 import { 
   onAuthStateChanged, 
@@ -25,6 +26,7 @@ import GuideModal from "./components/GuideModal";
 import TermsModal from "./components/TermsModal";
 
 export default function SettingsPage() {
+  const router = useRouter(); // 💡 宣言
   const [user, setUser] = useState<User | null>(null);
   const [activeModal, setActiveModal] = useState<"auth" | "guide" | "contact" | "terms" | "about" | null>(null);
   const [authMode, setAuthMode] = useState<"login" | "signup">("signup");
@@ -49,7 +51,6 @@ export default function SettingsPage() {
       setUser(currentUser);
       if (currentUser) {
         console.log("ログイン中のUID:", currentUser.uid);
-        // もしここで何かFirestoreを叩いている処理があれば、それが原因です
       }
     });
     return () => unsubscribe();
@@ -104,7 +105,7 @@ export default function SettingsPage() {
     if (!confirm("ログアウトしますか？")) return;
     try {
       await signOut(auth);
-      alert("ログアウトしました");
+      router.push("/"); // 💡 「はい」を選んだらログアウトしてトップ（ログイン画面）へ強制的に飛ぶ
     } catch (error) {
       console.error("ログアウト失敗:", error);
     }

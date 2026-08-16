@@ -254,12 +254,13 @@ export default function Page() {
               </div>
             </div>
 
-            <Button
+            {/* 修正：カスタムButtonから通常のbuttonに変更 */}
+            <button
               type="submit"
               className="w-full py-3.5 bg-pink-600 hover:bg-pink-700 text-white rounded-2xl font-bold shadow-md shadow-pink-200 transition text-xs"
             >
               {topAuthMode === "login" ? "メールアドレスでログイン" : "アカウントを作成する"}
-            </Button>
+            </button>
           </form>
 
           <div className="relative flex py-2 items-center">
@@ -268,7 +269,7 @@ export default function Page() {
             <div className="flex-grow border-t border-gray-100"></div>
           </div>
 
-          {/* Googleログイン / 登録ボタン（variant="white" で確実に黒文字に） */}
+          {/* Googleログイン / 登録ボタン */}
           <Button
             type="button"
             onClick={handleGoogleAuth}

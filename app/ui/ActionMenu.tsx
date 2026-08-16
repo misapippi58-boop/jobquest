@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react"; // 1. useRef, useEffect を追加
+import { useState, useEffect, useRef } from "react";
 import { MoreVertical } from "lucide-react";
 import Button from "./Button";
 
@@ -9,12 +9,10 @@ interface ActionMenuProps {
 
 export const ActionMenu = ({ onSortChange, onAddNew }: ActionMenuProps) => {
   const [menuOpen, setMenuOpen] = useState(false);
-  const menuRef = useRef<HTMLDivElement>(null); // 2. リファレンスを作成
+  const menuRef = useRef<HTMLDivElement>(null);
 
-  // 3. 外側クリックを検知する処理
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      // メニューの範囲外がクリックされたら閉じる
       if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
         setMenuOpen(false);
       }
@@ -35,7 +33,6 @@ export const ActionMenu = ({ onSortChange, onAddNew }: ActionMenuProps) => {
   };
 
   return (
-    // 4. 親要素に ref={menuRef} を設定（ここ全体が監視対象になります）
     <div className="relative flex flex-row gap-2" ref={menuRef}>
       <button
         onClick={() => setMenuOpen(!menuOpen)}
@@ -48,7 +45,6 @@ export const ActionMenu = ({ onSortChange, onAddNew }: ActionMenuProps) => {
         ＋
       </Button>
 
-      {/* 5. 画面全体を覆う overlay div を削除してスッキリ！ */}
       {menuOpen && (
         <div className="absolute top-0 right-14 bg-white rounded-2xl shadow-xl border border-pink-100 overflow-hidden z-50 min-w-[160px]">
           <button className="block w-full px-4 py-3 text-left hover:bg-pink-50" onClick={() => handleSort("created")}>登録順</button>
